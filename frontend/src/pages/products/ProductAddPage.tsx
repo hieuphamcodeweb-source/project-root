@@ -9,7 +9,7 @@ export function ProductAddPage() {
 
   async function handleCreate(payload: ProductPayload) {
     await createProduct(payload)
-    navigate('/products')
+    navigate('/admin/products')
   }
 
   return (

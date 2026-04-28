@@ -17,7 +17,7 @@ export function UserEditPage() {
     async function loadUser() {
       if (!Number.isInteger(userId) || userId <= 0) {
         message.error('Invalid user id.')
-        navigate('/users')
+        navigate('/admin/users')
         return
       }
 
@@ -32,7 +32,7 @@ export function UserEditPage() {
         })
       } catch {
         message.error('Cannot load user by id.')
-        navigate('/users')
+        navigate('/admin/users')
       } finally {
         setLoading(false)
       }
@@ -43,7 +43,7 @@ export function UserEditPage() {
 
   async function handleUpdateUser(payload: CreateUserPayload) {
     await updateUser(userId, payload)
-    navigate('/users')
+    navigate('/admin/users')
   }
 
   return (

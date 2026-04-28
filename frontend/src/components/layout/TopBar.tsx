@@ -1,3 +1,6 @@
+import { useNavigate } from 'react-router-dom'
+import { logout } from '../../services/auth'
+
 const notifications = [
   { color: 'danger', value: 5 },
   { color: 'warning', value: 3 },
@@ -5,6 +8,13 @@ const notifications = [
 ]
 
 export function TopBar() {
+  const navigate = useNavigate()
+
+  function handleLogout() {
+    logout()
+    navigate('/admin/login')
+  }
+
   return (
     <header className="topbar">
       <div className="topbar-left" />
@@ -16,8 +26,8 @@ export function TopBar() {
             </span>
           ))}
         </div>
-        <button className="avatar-button" type="button" aria-label="Open profile">
-          HA
+        <button className="avatar-button" type="button" aria-label="Logout admin" onClick={handleLogout}>
+          OUT
         </button>
       </div>
     </header>

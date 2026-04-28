@@ -28,7 +28,7 @@ export function ProductDetailPage() {
   useEffect(() => {
     async function loadProductDetail() {
       if (!id) {
-        navigate('/products')
+        navigate('/admin/products')
         return
       }
 
@@ -38,7 +38,7 @@ export function ProductDetailPage() {
         setProduct(result.data)
       } catch {
         message.error('Cannot load product detail.')
-        navigate('/products')
+        navigate('/admin/products')
       } finally {
         setLoading(false)
       }
@@ -60,8 +60,8 @@ export function ProductDetailPage() {
           <div className="product-detail-header">
             <h1>{product.name}</h1>
             <div className="product-actions">
-              <Button onClick={() => navigate('/products')}>Back to list</Button>
-              <Button type="primary" onClick={() => navigate(`/products/${product._id}/edit`)}>
+              <Button onClick={() => navigate('/admin/products')}>Back to list</Button>
+              <Button type="primary" onClick={() => navigate(`/admin/products/${product._id}/edit`)}>
                 Edit product
               </Button>
             </div>

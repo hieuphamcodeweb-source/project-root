@@ -1,5 +1,7 @@
 import { Button, Form, Image, Input, InputNumber, Select, Space, message } from 'antd'
-import type { ProductPayload, ProductStatus } from '../../types'
+import { useEffect, useMemo, useState } from 'react'
+import { getCategories } from '../../services/categoriesApi'
+import type { CategoryRecord, ProductPayload, ProductStatus } from '../../types'
 
 interface ProductFormProps {
   title: string
@@ -14,9 +16,41 @@ const imageUrlRegex = /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i
 
 export function ProductForm({ title, submitLabel, initialValues, onSubmit, successMessage }: ProductFormProps) {
   const [form] = Form.useForm<ProductPayload>()
+  const [categories, setCategories] = useState<CategoryRecord[]>([])
+  const [categoriesLoading, setCategoriesLoading] = useState(false)
 
   const thumbnailUrl = Form.useWatch('thumbnailUrl', form)
   const galleryUrls = Form.useWatch('galleryUrls', form) ?? []
+  const currentCategory = Form.useWatch('category', form)
+
+  useEffect(() => {
+    async function loadCategories() {
+      try {
+        setCategoriesLoading(true)
+        const result = await getCategories()
+        setCategories(result.data)
+      } catch {
+        message.error('Cannot load categories for product form.')
+      } finally {
+        setCategoriesLoading(false)
+      }
+    }
+
+    loadCategories()
+  }, [])
+
+  const categoryOptions = useMemo(() => {
+    const baseOptions = categories.map((item) => ({
+      label: `${item.categoryCode} - ${item.categoryName}`,
+      value: item.categoryName,
+    }))
+
+    if (currentCategory && !baseOptions.some((item) => item.value === currentCategory)) {
+      return [{ label: currentCategory, value: currentCategory }, ...baseOptions]
+    }
+
+    return baseOptions
+  }, [categories, currentCategory])
 
   async function handleFinish(values: ProductPayload) {
     try {
@@ -63,10 +97,15 @@ export function ProductForm({ title, submitLabel, initialValues, onSubmit, succe
             label="Category"
             rules={[
               { required: true, message: 'Category is required.' },
-              { min: 2, message: 'Category must have at least 2 characters.' },
             ]}
           >
-            <Input placeholder="e.g. Electronics" />
+            <Select
+              showSearch
+              loading={categoriesLoading}
+              options={categoryOptions}
+              placeholder="Select category"
+              optionFilterProp="label"
+            />
           </Form.Item>
 
           <Form.Item<ProductPayload> name="status" label="Status" rules={[{ required: true, message: 'Status is required.' }]}>
@@ -131,21 +170,26 @@ export function ProductForm({ title, submitLabel, initialValues, onSubmit, succe
                 </Button>
               </div>
 
-              {fields.map((field, index) => (
-                <Space key={field.key} align="baseline" className="gallery-item">
-                  <Form.Item
-                    {...field}
-                    label={`Gallery URL #${index + 1}`}
-                    rules={[{ pattern: imageUrlRegex, message: 'Must be a valid image URL.' }]}
-                    className="gallery-input-item"
-                  >
-                    <Input placeholder="https://example.com/image.jpg" />
-                  </Form.Item>
-                  <Button danger onClick={() => remove(field.name)}>
-                    Remove
-                  </Button>
-                </Space>
-              ))}
+              {fields.map((field, index) => {
+                const { key, ...restField } = field
+
+                return (
+                  <Space key={key} align="baseline" className="gallery-item">
+                    <Form.Item
+                      key={key}
+                      {...restField}
+                      label={`Gallery URL #${index + 1}`}
+                      rules={[{ pattern: imageUrlRegex, message: 'Must be a valid image URL.' }]}
+                      className="gallery-input-item"
+                    >
+                      <Input placeholder="https://example.com/image.jpg" />
+                    </Form.Item>
+                    <Button danger onClick={() => remove(field.name)}>
+                      Remove
+                    </Button>
+                  </Space>
+                )
+              })}
             </div>
           )}
         </Form.List>

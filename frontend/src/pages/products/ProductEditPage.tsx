@@ -15,7 +15,7 @@ export function ProductEditPage() {
   useEffect(() => {
     async function loadProduct() {
       if (!id) {
-        navigate('/products')
+        navigate('/admin/products')
         return
       }
 
@@ -34,7 +34,7 @@ export function ProductEditPage() {
         })
       } catch {
         message.error('Cannot load product.')
-        navigate('/products')
+        navigate('/admin/products')
       } finally {
         setLoading(false)
       }
@@ -46,7 +46,7 @@ export function ProductEditPage() {
   async function handleUpdate(payload: ProductPayload) {
     if (!id) return
     await updateProduct(id, payload)
-    navigate('/products')
+    navigate('/admin/products')
   }
 
   return (

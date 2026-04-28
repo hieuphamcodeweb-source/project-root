@@ -9,7 +9,7 @@ export function UserAddPage() {
 
   async function handleCreateUser(payload: CreateUserPayload) {
     await createUser(payload)
-    navigate('/users')
+    navigate('/admin/users')
   }
 
   return (

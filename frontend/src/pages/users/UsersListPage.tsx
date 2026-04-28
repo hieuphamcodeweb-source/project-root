@@ -44,7 +44,7 @@ export function UsersListPage() {
   }
 
   function handleEditUser(id: number) {
-    navigate(`/users/${id}/edit`)
+    navigate(`/admin/users/${id}/edit`)
   }
 
   return (

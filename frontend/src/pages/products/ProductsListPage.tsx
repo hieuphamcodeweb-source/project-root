@@ -42,8 +42,8 @@ export function ProductsListPage() {
         rows={rows}
         loading={loading}
         deletingId={deletingId}
-        onView={(id) => navigate(`/products/${id}`)}
-        onEdit={(id) => navigate(`/products/${id}/edit`)}
+        onView={(id) => navigate(`/admin/products/${id}`)}
+        onEdit={(id) => navigate(`/admin/products/${id}/edit`)}
         onDelete={handleDelete}
       />
     </>

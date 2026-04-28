@@ -43,3 +43,22 @@ export interface ProductPayload {
   thumbnailUrl: string
   galleryUrls: string[]
 }
+
+export type CategoryStatus = 'active' | 'inactive' | 'draft'
+
+export interface CategoryRecord {
+  _id: string
+  categoryCode: string
+  categoryName: string
+  status: CategoryStatus
+  sortOrder: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CategoryPayload {
+  categoryCode: string
+  categoryName: string
+  status: CategoryStatus
+  sortOrder: number
+}
