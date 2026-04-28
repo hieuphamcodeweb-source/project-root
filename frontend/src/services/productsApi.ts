@@ -2,6 +2,16 @@ import type { ProductPayload, ProductRecord } from '../types'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5001'
 
+export class ApiError extends Error {
+  status: number
+
+  constructor(status: number, message: string) {
+    super(message)
+    this.name = 'ApiError'
+    this.status = status
+  }
+}
+
 interface ProductListResponse {
   data: ProductRecord[]
   total: number
@@ -21,7 +31,7 @@ interface ProductMutationResponse {
 async function parseResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     const errorBody = (await response.json().catch(() => null)) as { message?: string } | null
-    throw new Error(errorBody?.message ?? `Request failed: ${response.status}`)
+    throw new ApiError(response.status, errorBody?.message ?? `Request failed: ${response.status}`)
   }
 
   return (await response.json()) as T

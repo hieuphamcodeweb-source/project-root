@@ -1,12 +1,13 @@
 import { Button, Form, Image, Input, InputNumber, Select, Space, message } from 'antd'
 import { useEffect, useMemo, useState } from 'react'
 import { getCategories } from '../../services/categoriesApi'
+import { ApiError } from '../../services/productsApi'
 import type { CategoryRecord, ProductPayload, ProductStatus } from '../../types'
 
 interface ProductFormProps {
   title: string
   submitLabel: string
-  initialValues: ProductPayload
+  initialValues: Partial<ProductPayload>
   onSubmit: (payload: ProductPayload) => Promise<void>
   successMessage: string
 }
@@ -60,6 +61,16 @@ export function ProductForm({ title, submitLabel, initialValues, onSubmit, succe
       })
       message.success(successMessage)
     } catch (error) {
+      if (error instanceof ApiError && error.status === 409 && error.message.toLowerCase().includes('sku')) {
+        form.setFields([
+          {
+            name: 'sku',
+            errors: ['SKU already exists. Please enter another SKU.'],
+          },
+        ])
+        return
+      }
+
       message.error(error instanceof Error ? error.message : 'Submit product failed.')
     }
   }
@@ -101,6 +112,7 @@ export function ProductForm({ title, submitLabel, initialValues, onSubmit, succe
           >
             <Select
               showSearch
+              allowClear
               loading={categoriesLoading}
               options={categoryOptions}
               placeholder="Select category"
@@ -120,7 +132,7 @@ export function ProductForm({ title, submitLabel, initialValues, onSubmit, succe
               { type: 'number', min: 0, message: 'Price must be non-negative.' },
             ]}
           >
-            <InputNumber<number> min={0} precision={2} className="full-width" />
+            <InputNumber<number> min={0} precision={2} className="full-width" placeholder="Enter price" />
           </Form.Item>
 
           <Form.Item<ProductPayload>
@@ -131,6 +143,10 @@ export function ProductForm({ title, submitLabel, initialValues, onSubmit, succe
               { type: 'number', min: 0, message: 'Stock must be non-negative.' },
               {
                 validator: async (_, value: number) => {
+                  if (value === undefined || value === null) {
+                    return
+                  }
+
                   if (!Number.isInteger(value)) {
                     throw new Error('Stock must be an integer.')
                   }
@@ -138,7 +154,7 @@ export function ProductForm({ title, submitLabel, initialValues, onSubmit, succe
               },
             ]}
           >
-            <InputNumber<number> min={0} precision={0} className="full-width" />
+            <InputNumber<number> min={0} precision={0} className="full-width" placeholder="Enter stock quantity" />
           </Form.Item>
         </div>
 

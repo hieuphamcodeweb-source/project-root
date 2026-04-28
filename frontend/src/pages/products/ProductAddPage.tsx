@@ -22,9 +22,6 @@ export function ProductAddPage() {
         initialValues={{
           name: '',
           sku: '',
-          category: '',
-          price: 0,
-          stock: 0,
           status: 'active',
           thumbnailUrl: '',
           galleryUrls: [],

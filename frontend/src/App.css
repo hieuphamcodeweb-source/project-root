@@ -72,6 +72,40 @@
   font-size: 0.82rem;
 }
 
+.nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav-group-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 6px;
+}
+
+.nav-expand-btn {
+  width: 22px;
+  height: 22px;
+  border: 1px solid #d1d7de;
+  border-radius: 4px;
+  background: #fff;
+  color: #4f565d;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.nav-expand-btn:hover {
+  background: #f2f5f8;
+}
+
+.nav-submenu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 /* Top bar */
 .topbar {
   height: 54px;
