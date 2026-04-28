@@ -16,3 +16,30 @@ export interface CreateUserPayload {
   role: UserRole
   status: UserStatus
 }
+
+export type ProductStatus = 'active' | 'inactive' | 'draft'
+
+export interface ProductRecord {
+  _id: string
+  name: string
+  sku: string
+  category: string
+  price: number
+  stock: number
+  status: ProductStatus
+  thumbnailUrl: string
+  galleryUrls: string[]
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ProductPayload {
+  name: string
+  sku: string
+  category: string
+  price: number
+  stock: number
+  status: ProductStatus
+  thumbnailUrl: string
+  galleryUrls: string[]
+}

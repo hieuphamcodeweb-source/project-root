@@ -1,32 +1,18 @@
 const { User, getNextUserId, isDbConnected } = require("../../services/userService");
-
-const allowedRoles = new Set(["Staff", "Admin", "Member"]);
-const allowedStatuses = new Set(["active", "inactive", "pending", "banned"]);
+const validateUserPayload = require("../../utils/validateUserPayload");
 
 async function createUser(req, res) {
   if (!isDbConnected()) {
     return res.status(503).json({ message: "Database is not connected." });
   }
 
-  const { username, dateRegistered, role, status } = req.body;
-
-  if (!username || typeof username !== "string") {
-    return res.status(400).json({ message: "username is required." });
-  }
-
-  if (!dateRegistered || typeof dateRegistered !== "string") {
-    return res.status(400).json({ message: "dateRegistered is required." });
-  }
-
-  if (!allowedRoles.has(role)) {
-    return res.status(400).json({ message: "role is invalid." });
-  }
-
-  if (!allowedStatuses.has(status)) {
-    return res.status(400).json({ message: "status is invalid." });
+  const validationError = validateUserPayload(req.body);
+  if (validationError) {
+    return res.status(400).json({ message: validationError });
   }
 
   try {
+    const { username, dateRegistered, role, status } = req.body;
     const newUser = await User.create({
       id: await getNextUserId(),
       username: username.trim(),

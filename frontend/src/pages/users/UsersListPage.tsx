@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { message } from 'antd'
+import { useNavigate } from 'react-router-dom'
 import { Breadcrumbs } from '../../components/common/Breadcrumbs'
 import { DataTable } from '../../components/datatable/DataTable'
 import { deleteUser, getUsers } from '../../services/usersApi'
 import type { UserRecord } from '../../types'
 
 export function UsersListPage() {
+  const navigate = useNavigate()
   const [users, setUsers] = useState<UserRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -41,6 +43,10 @@ export function UsersListPage() {
     }
   }
 
+  function handleEditUser(id: number) {
+    navigate(`/users/${id}/edit`)
+  }
+
   return (
     <>
       <Breadcrumbs items={['Home', 'Management', 'Users']} />
@@ -48,6 +54,7 @@ export function UsersListPage() {
         rows={users}
         loading={loading}
         error={error}
+        onEditUser={handleEditUser}
         onDeleteUser={handleDeleteUser}
         deletingUserId={deletingUserId}
       />

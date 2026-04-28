@@ -14,9 +14,12 @@ export function Sidebar() {
         <NavLink to="/users/add" className={({ isActive }) => `nav-item ${isActive ? 'is-active' : ''} nav-child`}>
           <span>Users / Add</span>
         </NavLink>
-        <a href="#" className="nav-item">
+        <NavLink to="/products" end className={({ isActive }) => `nav-item ${isActive ? 'is-active' : ''} nav-parent`}>
           <span>Products</span>
-        </a>
+        </NavLink>
+        <NavLink to="/products/add" className={({ isActive }) => `nav-item ${isActive ? 'is-active' : ''} nav-child`}>
+          <span>Products / Add</span>
+        </NavLink>
         <a href="#" className="nav-item">
           <span>Orders</span>
         </a>

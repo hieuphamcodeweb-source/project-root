@@ -40,6 +40,41 @@ export async function createUser(payload: CreateUserPayload): Promise<CreateUser
   return (await response.json()) as CreateUserApiResponse
 }
 
+interface GetUserByIdApiResponse {
+  data: UserRecord
+}
+
+export async function getUserById(id: number): Promise<GetUserByIdApiResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/users/${id}`)
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch user: ${response.status}`)
+  }
+
+  return (await response.json()) as GetUserByIdApiResponse
+}
+
+interface UpdateUserApiResponse {
+  message: string
+  data: UserRecord
+}
+
+export async function updateUser(id: number, payload: CreateUserPayload): Promise<UpdateUserApiResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/users/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to update user: ${response.status}`)
+  }
+
+  return (await response.json()) as UpdateUserApiResponse
+}
+
 interface DeleteUserApiResponse {
   message: string
   data: UserRecord

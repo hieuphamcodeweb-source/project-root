@@ -6,6 +6,7 @@ interface DataTableProps {
   rows: UserRecord[]
   loading?: boolean
   error?: string | null
+  onEditUser?: (id: number) => void
   onDeleteUser?: (id: number) => Promise<void>
   deletingUserId?: number | null
 }
@@ -14,6 +15,7 @@ export function DataTable({
   rows,
   loading = false,
   error = null,
+  onEditUser,
   onDeleteUser,
   deletingUserId = null,
 }: DataTableProps) {
@@ -76,6 +78,11 @@ export function DataTable({
                   </td>
                   <td>
                     <ActionButtons
+                      onEdit={() => {
+                        if (onEditUser) {
+                          onEditUser(user.id)
+                        }
+                      }}
                       deleting={deletingUserId === user.id}
                       onDelete={async () => {
                         if (onDeleteUser) {
