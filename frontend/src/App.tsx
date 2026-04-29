@@ -16,6 +16,8 @@ import { ProductAddPage } from './pages/products/ProductAddPage'
 import { ProductDetailPage } from './pages/products/ProductDetailPage'
 import { ProductEditPage } from './pages/products/ProductEditPage'
 import { ProductsListPage } from './pages/products/ProductsListPage'
+import { OrderDetailPage } from './pages/orders/OrderDetailPage'
+import { OrdersListPage } from './pages/orders/OrdersListPage'
 import { UserAddPage } from './pages/users/UserAddPage'
 import { UserEditPage } from './pages/users/UserEditPage'
 import { UsersListPage } from './pages/users/UsersListPage'
@@ -52,6 +54,8 @@ function App() {
         <Route path="categories" element={<CategoriesListPage />} />
         <Route path="categories/add" element={<CategoryAddPage />} />
         <Route path="categories/:id/edit" element={<CategoryEditPage />} />
+        <Route path="orders" element={<OrdersListPage />} />
+        <Route path="orders/:id" element={<OrderDetailPage />} />
       </Route>
     </Routes>
   )
