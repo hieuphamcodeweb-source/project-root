@@ -1,6 +1,6 @@
 export type UserStatus = 'active' | 'inactive' | 'pending' | 'banned'
 
-export type UserRole = 'Staff' | 'Admin' | 'Member'
+export type UserRole = 'Staff' | 'Admin' | 'Member' | 'User'
 
 export interface UserRecord {
   id: number

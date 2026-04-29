@@ -1,7 +1,7 @@
-import { Button, Card, Form, Input, Typography } from 'antd'
+import { Button, Card, Form, Input, Typography, message } from 'antd'
 import { useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
-import { login } from '../../services/auth'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { loginWithCredentials } from '../../services/authApi'
 
 interface LoginValues {
   username: string
@@ -14,11 +14,18 @@ export function LoginPage() {
   const location = useLocation()
   const redirectTo = (location.state as { from?: string } | null)?.from ?? '/admin/users'
 
-  async function handleLogin() {
+  async function handleLogin(values: LoginValues) {
     try {
       setSubmitting(true)
-      login()
-      navigate(redirectTo, { replace: true })
+      const session = await loginWithCredentials(values)
+      if (session.user.role === 'admin') {
+        navigate(redirectTo, { replace: true })
+      } else {
+        message.info('Logged in as user. Redirecting to client area.')
+        navigate('/client/products', { replace: true })
+      }
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : 'Login failed.')
     } finally {
       setSubmitting(false)
     }
@@ -27,8 +34,10 @@ export function LoginPage() {
   return (
     <div className="auth-screen">
       <Card className="auth-card" title="Admin Login">
-        <Typography.Paragraph type="secondary">Đăng nhập để truy cập khu vực quản trị.</Typography.Paragraph>
-        <Form<LoginValues> layout="vertical" onFinish={handleLogin} initialValues={{ username: 'admin' }}>
+        <Typography.Paragraph type="secondary">
+          Login with your account. If you do not have one, create it from Register.
+        </Typography.Paragraph>
+        <Form<LoginValues> layout="vertical" onFinish={handleLogin}>
           <Form.Item name="username" label="Username" rules={[{ required: true, message: 'Username is required.' }]}>
             <Input placeholder="admin" />
           </Form.Item>
@@ -41,6 +50,9 @@ export function LoginPage() {
             </Button>
           </Form.Item>
         </Form>
+        <Typography.Paragraph type="secondary" className="auth-alt-link">
+          No account yet? <Link to="/admin/register">Register now</Link>
+        </Typography.Paragraph>
       </Card>
     </div>
   )

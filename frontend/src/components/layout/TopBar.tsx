@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { logout } from '../../services/auth'
+import { getCurrentUser, logout } from '../../services/auth'
 
 const notifications = [
   { color: 'danger', value: 5 },
@@ -9,6 +9,7 @@ const notifications = [
 
 export function TopBar() {
   const navigate = useNavigate()
+  const currentUser = getCurrentUser()
 
   function handleLogout() {
     logout()
@@ -19,6 +20,7 @@ export function TopBar() {
     <header className="topbar">
       <div className="topbar-left" />
       <div className="topbar-right">
+        <span>{currentUser?.fullName ?? 'Guest'}</span>
         <div className="notification-group" aria-label="Notifications">
           {notifications.map((item, index) => (
             <span key={`${item.color}-${index}`} className={`counter-dot ${item.color}`}>

@@ -1,4 +1,5 @@
 import type { CreateUserPayload, UserRecord } from '../types'
+import { getAuthHeader } from './auth'
 
 interface UsersApiResponse {
   data: UserRecord[]
@@ -7,10 +8,14 @@ interface UsersApiResponse {
   pageSize: number
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5001'
 
 export async function getUsers(): Promise<UsersApiResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/users`)
+  const response = await fetch(`${API_BASE_URL}/api/users`, {
+    headers: {
+      ...getAuthHeader(),
+    },
+  })
 
   if (!response.ok) {
     throw new Error(`Failed to fetch users: ${response.status}`)
@@ -29,6 +34,7 @@ export async function createUser(payload: CreateUserPayload): Promise<CreateUser
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      ...getAuthHeader(),
     },
     body: JSON.stringify(payload),
   })
@@ -45,7 +51,11 @@ interface GetUserByIdApiResponse {
 }
 
 export async function getUserById(id: number): Promise<GetUserByIdApiResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/users/${id}`)
+  const response = await fetch(`${API_BASE_URL}/api/users/${id}`, {
+    headers: {
+      ...getAuthHeader(),
+    },
+  })
 
   if (!response.ok) {
     throw new Error(`Failed to fetch user: ${response.status}`)
@@ -64,6 +74,7 @@ export async function updateUser(id: number, payload: CreateUserPayload): Promis
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
+      ...getAuthHeader(),
     },
     body: JSON.stringify(payload),
   })
@@ -83,6 +94,9 @@ interface DeleteUserApiResponse {
 export async function deleteUser(id: number): Promise<DeleteUserApiResponse> {
   const response = await fetch(`${API_BASE_URL}/api/users/${id}`, {
     method: 'DELETE',
+    headers: {
+      ...getAuthHeader(),
+    },
   })
 
   if (!response.ok) {

@@ -8,12 +8,16 @@ async function getProducts(req, res) {
 
   try {
     const products = await Product.find().sort({ createdAt: -1 }).lean();
+    const normalizedProducts = products.map((product) => ({
+      ...product,
+      status: product.stock <= 0 ? "inactive" : product.status,
+    }));
 
     return res.status(200).json({
-      data: products,
-      total: products.length,
+      data: normalizedProducts,
+      total: normalizedProducts.length,
       page: 1,
-      pageSize: products.length,
+      pageSize: normalizedProducts.length,
     });
   } catch (error) {
     return res.status(500).json({ message: "Failed to fetch products.", error: error.message });

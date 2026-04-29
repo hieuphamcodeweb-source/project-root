@@ -27,6 +27,7 @@ async function updateProductById(req, res) {
       sku: req.body.sku.trim().toUpperCase(),
       name: req.body.name.trim(),
       category: req.body.category.trim(),
+      status: req.body.stock === 0 ? "inactive" : req.body.status,
       thumbnailUrl: req.body.thumbnailUrl.trim(),
       galleryUrls: req.body.galleryUrls.map((url) => url.trim()),
     };

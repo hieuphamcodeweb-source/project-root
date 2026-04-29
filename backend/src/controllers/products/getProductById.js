@@ -13,7 +13,12 @@ async function getProductById(req, res) {
       return res.status(404).json({ message: "Product not found." });
     }
 
-    return res.status(200).json({ data: product });
+    const normalizedProduct = {
+      ...product,
+      status: product.stock <= 0 ? "inactive" : product.status,
+    };
+
+    return res.status(200).json({ data: normalizedProduct });
   } catch (error) {
     return res.status(500).json({ message: "Failed to fetch product.", error: error.message });
   }

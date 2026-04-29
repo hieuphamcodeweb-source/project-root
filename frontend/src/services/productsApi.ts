@@ -1,4 +1,5 @@
 import type { ProductPayload, ProductRecord } from '../types'
+import { getAuthHeader } from './auth'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5001'
 
@@ -50,7 +51,7 @@ export async function getProductById(id: string): Promise<ProductByIdResponse> {
 export async function createProduct(payload: ProductPayload): Promise<ProductMutationResponse> {
   const response = await fetch(`${API_BASE_URL}/api/products`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
     body: JSON.stringify(payload),
   })
 
@@ -60,7 +61,7 @@ export async function createProduct(payload: ProductPayload): Promise<ProductMut
 export async function updateProduct(id: string, payload: ProductPayload): Promise<ProductMutationResponse> {
   const response = await fetch(`${API_BASE_URL}/api/products/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
     body: JSON.stringify(payload),
   })
 
@@ -70,6 +71,9 @@ export async function updateProduct(id: string, payload: ProductPayload): Promis
 export async function deleteProduct(id: string): Promise<ProductMutationResponse> {
   const response = await fetch(`${API_BASE_URL}/api/products/${id}`, {
     method: 'DELETE',
+    headers: {
+      ...getAuthHeader(),
+    },
   })
 
   return parseResponse<ProductMutationResponse>(response)

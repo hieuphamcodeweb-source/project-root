@@ -1,4 +1,5 @@
 import type { CategoryPayload, CategoryRecord } from '../types'
+import { getAuthHeader } from './auth'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5001'
 
@@ -28,19 +29,27 @@ async function parseResponse<T>(response: Response): Promise<T> {
 }
 
 export async function getCategories(): Promise<CategoryListResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/categories`)
+  const response = await fetch(`${API_BASE_URL}/api/categories`, {
+    headers: {
+      ...getAuthHeader(),
+    },
+  })
   return parseResponse<CategoryListResponse>(response)
 }
 
 export async function getCategoryById(id: string): Promise<CategoryByIdResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/categories/${id}`)
+  const response = await fetch(`${API_BASE_URL}/api/categories/${id}`, {
+    headers: {
+      ...getAuthHeader(),
+    },
+  })
   return parseResponse<CategoryByIdResponse>(response)
 }
 
 export async function createCategory(payload: CategoryPayload): Promise<CategoryMutationResponse> {
   const response = await fetch(`${API_BASE_URL}/api/categories`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
     body: JSON.stringify(payload),
   })
   return parseResponse<CategoryMutationResponse>(response)
@@ -49,13 +58,18 @@ export async function createCategory(payload: CategoryPayload): Promise<Category
 export async function updateCategory(id: string, payload: CategoryPayload): Promise<CategoryMutationResponse> {
   const response = await fetch(`${API_BASE_URL}/api/categories/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
     body: JSON.stringify(payload),
   })
   return parseResponse<CategoryMutationResponse>(response)
 }
 
 export async function deleteCategory(id: string): Promise<CategoryMutationResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/categories/${id}`, { method: 'DELETE' })
+  const response = await fetch(`${API_BASE_URL}/api/categories/${id}`, {
+    method: 'DELETE',
+    headers: {
+      ...getAuthHeader(),
+    },
+  })
   return parseResponse<CategoryMutationResponse>(response)
 }

@@ -6,6 +6,9 @@ const connectDB = require("./config/db");
 const usersRoute = require("./routes/users");
 const productsRoute = require("./routes/products");
 const categoriesRoute = require("./routes/categories");
+const authRoute = require("./routes/auth");
+const cartRoute = require("./routes/cart");
+const ordersRoute = require("./routes/orders");
 
 const app = express();
 
@@ -29,6 +32,9 @@ app.get("/api/health", (req, res) => {
 app.use("/api/users", usersRoute);
 app.use("/api/products", productsRoute);
 app.use("/api/categories", categoriesRoute);
+app.use("/api/auth", authRoute);
+app.use("/api/cart", cartRoute);
+app.use("/api/orders", ordersRoute);
 
 const PORT = process.env.PORT || 5001;
 

@@ -4,10 +4,13 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute'
 import { AppLayout } from './components/layout/AppLayout'
 import { ClientLayout } from './components/layout/ClientLayout'
 import { LoginPage } from './pages/auth/LoginPage'
+import { RegisterPage } from './pages/auth/RegisterPage'
 import { CategoryAddPage } from './pages/categories/CategoryAddPage'
 import { CategoriesListPage } from './pages/categories/CategoriesListPage'
 import { CategoryEditPage } from './pages/categories/CategoryEditPage'
 import { ClientProductDetailPage } from './pages/client/ClientProductDetailPage'
+import { ClientCartPage } from './pages/client/ClientCartPage'
+import { ClientOrderSuccessPage } from './pages/client/ClientOrderSuccessPage'
 import { ClientProductsPage } from './pages/client/ClientProductsPage'
 import { ProductAddPage } from './pages/products/ProductAddPage'
 import { ProductDetailPage } from './pages/products/ProductDetailPage'
@@ -24,8 +27,11 @@ function App() {
       <Route path="/client" element={<ClientLayout />}>
         <Route path="products" element={<ClientProductsPage />} />
         <Route path="products/:id" element={<ClientProductDetailPage />} />
+        <Route path="cart" element={<ClientCartPage />} />
+        <Route path="order-success" element={<ClientOrderSuccessPage />} />
       </Route>
       <Route path="/admin/login" element={<LoginPage />} />
+      <Route path="/admin/register" element={<RegisterPage />} />
 
       <Route
         path="/admin"

@@ -19,13 +19,18 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["Staff", "Admin", "Member"],
+      enum: ["Staff", "Admin", "Member", "User"],
       required: true,
     },
     status: {
       type: String,
       enum: ["active", "inactive", "pending", "banned"],
       required: true,
+    },
+    password: {
+      type: String,
+      trim: true,
+      select: false,
     },
   },
   {
