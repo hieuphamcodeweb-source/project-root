@@ -62,3 +62,34 @@ export interface CategoryPayload {
   status: CategoryStatus
   sortOrder: number
 }
+
+export type OrderStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled'
+
+export interface OrderItem {
+  productId: string
+  name: string
+  sku: string
+  price: number
+  quantity: number
+  subtotal: number
+  product: {
+    _id: string
+    name: string
+    category: string
+    thumbnailUrl: string
+    currentPrice: number
+    sku?: string
+  } | null
+}
+
+export interface OrderRecord {
+  _id: string
+  userId: number
+  customerName: string
+  paymentMethod: 'COD'
+  status: OrderStatus
+  totalAmount: number
+  items: OrderItem[]
+  createdAt: string
+  updatedAt: string
+}

@@ -24,6 +24,13 @@ const managementGroups = [
     childItems: [{ to: '/admin/categories/add', label: 'Add' }],
     matchPrefix: '/admin/categories',
   },
+  {
+    id: 'orders',
+    label: 'Orders',
+    parentTo: '/admin/orders',
+    childItems: [],
+    matchPrefix: '/admin/orders',
+  },
 ]
 
 export function Sidebar() {
@@ -32,6 +39,7 @@ export function Sidebar() {
     users: false,
     products: false,
     categories: false,
+    orders: false,
   })
 
   useEffect(() => {
@@ -82,9 +90,6 @@ export function Sidebar() {
         <NavLink to="/client/products" className={({ isActive }) => `nav-item ${isActive ? 'is-active' : ''} nav-child`}>
           <span>Client / Products</span>
         </NavLink>
-        <a href="#" className="nav-item">
-          <span>Orders</span>
-        </a>
 
         <p className="section-label">System</p>
         {systemItems.map((item) => (
