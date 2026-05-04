@@ -1,5 +1,54 @@
 const mongoose = require("mongoose");
 
+const savedAddressSchema = new mongoose.Schema(
+  {
+    id: {
+      type: String,
+      required: true,
+    },
+    label: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    recipientName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    phone: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    street: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    ward: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    district: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    province: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    isDefault: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  { _id: false }
+);
+
 const userSchema = new mongoose.Schema(
   {
     id: {
@@ -31,6 +80,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
       select: false,
+    },
+    addresses: {
+      type: [savedAddressSchema],
+      default: [],
     },
   },
   {

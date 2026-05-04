@@ -1,12 +1,17 @@
 const Order = require("../../models/Order");
 const Product = require("../../models/Product");
 const User = require("../../models/User");
+const { resolveOrderLookup } = require("../../utils/orderLookup");
 
 async function getOrderById(req, res) {
   try {
-    const order = await Order.findById(req.params.id).lean();
+    const lookup = resolveOrderLookup(req.params.id);
+    if (!lookup) {
+      return res.status(400).json({ message: "Thiếu mã đơn hàng hoặc ID." });
+    }
+    const order = await Order.findOne(lookup).lean();
     if (!order) {
-      return res.status(404).json({ message: "Order not found." });
+      return res.status(404).json({ message: "Không tìm thấy đơn hàng." });
     }
 
     const user = await User.findOne({ id: order.userId }).select("id username").lean();

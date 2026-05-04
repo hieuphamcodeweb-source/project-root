@@ -12,17 +12,21 @@ export function LoginPage() {
   const [submitting, setSubmitting] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
-  const redirectTo = (location.state as { from?: string } | null)?.from ?? '/admin/users'
+  const fromPath = (location.state as { from?: string } | null)?.from
 
   async function handleLogin(values: LoginValues) {
     try {
       setSubmitting(true)
       const session = await loginWithCredentials(values)
       if (session.user.role === 'admin') {
-        navigate(redirectTo, { replace: true })
+        const to =
+          fromPath && fromPath.startsWith('/admin') ? fromPath : '/admin/users'
+        navigate(to, { replace: true })
       } else {
         message.info('Logged in as user. Redirecting to client area.')
-        navigate('/client/products', { replace: true })
+        const to =
+          fromPath && fromPath.startsWith('/client') ? fromPath : '/client/products'
+        navigate(to, { replace: true })
       }
     } catch (error) {
       message.error(error instanceof Error ? error.message : 'Login failed.')

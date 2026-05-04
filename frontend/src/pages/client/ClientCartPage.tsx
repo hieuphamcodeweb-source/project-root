@@ -1,8 +1,17 @@
-import { Button, Checkbox, Empty, InputNumber, Typography, message } from 'antd'
+import { Button, Checkbox, Empty, InputNumber, Space, Typography, message } from 'antd'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { applyPurchasedItems, clearCart, getCartItems, initializeCartFromApi, removeCartItem, subscribeCartUpdates, updateCartItemQuantity, type CartItem } from '../../services/cart'
-import { createCodOrder } from '../../services/ordersApi'
+import { isAuthenticated } from '../../services/auth'
+import {
+  clearCart,
+  getCartItems,
+  initializeCartFromApi,
+  removeCartItem,
+  subscribeCartUpdates,
+  updateCartItemQuantity,
+  type CartItem,
+} from '../../services/cart'
+import { persistCheckoutProductIds } from '../../utils/checkoutSelection'
 
 function toCurrency(value: number) {
   return new Intl.NumberFormat('en-US', {
@@ -17,7 +26,6 @@ export function ClientCartPage() {
   const navigate = useNavigate()
   const [items, setItems] = useState<CartItem[]>([])
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([])
-  const [checkingOut, setCheckingOut] = useState(false)
 
   useEffect(() => {
     async function bootstrapCart() {
@@ -43,18 +51,35 @@ export function ClientCartPage() {
     () => items.filter((item) => selectedProductIds.includes(item.productId)),
     [items, selectedProductIds]
   )
-  const total = useMemo(() => selectedItems.reduce((sum, item) => sum + item.price * item.quantity, 0), [selectedItems])
+  const selectedSubtotal = useMemo(
+    () => selectedItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
+    [selectedItems]
+  )
+
+  function goToCheckout() {
+    if (selectedItems.length === 0) {
+      message.warning('Chọn ít nhất một sản phẩm để thanh toán.')
+      return
+    }
+    persistCheckoutProductIds(selectedProductIds)
+    if (!isAuthenticated()) {
+      message.info('Đăng nhập để tiếp tục thanh toán.')
+      navigate('/admin/login', { state: { from: '/client/checkout' } })
+      return
+    }
+    navigate('/client/checkout', { state: { productIds: selectedProductIds } })
+  }
 
   return (
     <section className="client-cart-page">
       <div className="client-cart-header">
-        <Typography.Title level={2}>Your Cart</Typography.Title>
-        <Link to="/client/products">Continue shopping</Link>
+        <Typography.Title level={2}>Giỏ hàng</Typography.Title>
+        <Link to="/client/products">Tiếp tục mua sắm</Link>
       </div>
 
       {items.length === 0 ? (
         <div className="client-cart-empty">
-          <Empty description="Your cart is empty." />
+          <Empty description="Giỏ hàng trống." />
         </div>
       ) : (
         <>
@@ -73,7 +98,7 @@ export function ClientCartPage() {
                 <div className="client-cart-info">
                   <strong>{item.name}</strong>
                   <span>{toCurrency(item.price)}</span>
-                  <small>Stock: {item.stock}</small>
+                  <small>Tồn: {item.stock}</small>
                 </div>
                 <InputNumber
                   min={1}
@@ -83,42 +108,33 @@ export function ClientCartPage() {
                 />
                 <strong>{toCurrency(item.price * item.quantity)}</strong>
                 <Button danger onClick={() => removeCartItem(item.productId)}>
-                  Remove
+                  Xóa
                 </Button>
               </article>
             ))}
           </div>
 
-          <div className="client-cart-summary">
-            <Typography.Title level={4}>Total: {toCurrency(total)}</Typography.Title>
-            <div className="client-cart-actions">
-              <Button onClick={() => clearCart()}>Clear cart</Button>
-              <Button
-                type="primary"
-                loading={checkingOut}
-                disabled={selectedItems.length === 0}
-                onClick={async () => {
-                  if (selectedItems.length === 0) {
-                    message.warning('Please select at least one product to checkout.')
-                    return
-                  }
-
-                  try {
-                    setCheckingOut(true)
-                    await createCodOrder(selectedItems.map((item) => ({ productId: item.productId, quantity: item.quantity })))
-                    applyPurchasedItems(selectedItems.map((item) => ({ productId: item.productId, quantity: item.quantity })))
-                    message.success('COD order placed successfully.')
-                    navigate('/client/order-success')
-                  } catch (error) {
-                    message.error(error instanceof Error ? error.message : 'Checkout failed.')
-                  } finally {
-                    setCheckingOut(false)
-                  }
-                }}
-              >
-                Checkout COD
-              </Button>
+          <div className="client-cart-footer-bar">
+            <div className="client-cart-footer-summary">
+              <Typography.Text type="secondary">
+                Đã chọn {selectedItems.length} món — Tạm tính:{' '}
+                <Typography.Text strong>{toCurrency(selectedSubtotal)}</Typography.Text>
+              </Typography.Text>
+              {!isAuthenticated() ? (
+                <Typography.Paragraph type="secondary" style={{ marginBottom: 0, marginTop: 6 }}>
+                  <Link to="/admin/login" state={{ from: `${location.pathname}${location.search}` }}>
+                    Đăng nhập
+                  </Link>{' '}
+                  để thanh toán.
+                </Typography.Paragraph>
+              ) : null}
             </div>
+            <Space wrap>
+              <Button onClick={() => clearCart()}>Xóa giỏ</Button>
+              <Button type="primary" disabled={selectedItems.length === 0} onClick={goToCheckout}>
+                Thanh toán
+              </Button>
+            </Space>
           </div>
         </>
       )}

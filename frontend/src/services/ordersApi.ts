@@ -11,18 +11,27 @@ interface CodOrderResponse {
   message: string
   data: {
     orderId: string
+    orderCode?: string
     totalAmount: number
   }
 }
 
-export async function createCodOrder(items: CheckoutItemPayload[]) {
+export async function createCodOrder(
+  items: CheckoutItemPayload[],
+  addressId: string,
+  options?: { promoCode?: string }
+) {
   const response = await fetch(`${API_BASE_URL}/api/orders/cod`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       ...getAuthHeader(),
     },
-    body: JSON.stringify({ items }),
+    body: JSON.stringify({
+      items,
+      addressId,
+      ...(options?.promoCode ? { promoCode: options.promoCode } : {}),
+    }),
   })
 
   const body = (await response.json().catch(() => null)) as { message?: string } | null

@@ -1,6 +1,7 @@
 import { Button } from 'antd'
 import { useEffect, useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { isAuthenticated } from '../../services/auth'
 import { getCartCount, initializeCartFromApi, subscribeCartUpdates } from '../../services/cart'
 
 export function ClientLayout() {
@@ -31,6 +32,15 @@ export function ClientLayout() {
       <header className="client-topbar">
         <strong>Shop Client</strong>
         <div className="client-topbar-actions">
+          {isAuthenticated() ? (
+            <Button onClick={() => navigate('/client/account')}>My account</Button>
+          ) : (
+            <Button
+              onClick={() => navigate('/admin/login', { state: { from: `${location.pathname}${location.search}` } })}
+            >
+              Login
+            </Button>
+          )}
           <Button
             onClick={() => {
               if (location.pathname === '/client/cart') {

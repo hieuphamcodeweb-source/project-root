@@ -26,12 +26,18 @@ export function OrdersListPage() {
 
   async function handleUpdateStatus(id: string, status: OrderStatus) {
     const result = await updateOrderStatus(id, status)
-    setRows((prev) => prev.map((item) => (item._id === id ? result.data : item)))
+    setRows((prev) =>
+      prev.map((item) =>
+        item._id === id
+          ? { ...item, status: result.data.status, updatedAt: result.data.updatedAt }
+          : item
+      )
+    )
   }
 
   return (
     <>
-      <Breadcrumbs items={['Home', 'Management', 'Orders']} />
+      <Breadcrumbs items={['Trang chủ', 'Quản trị', 'Đơn hàng']} />
       <OrderTable rows={rows} loading={loading} onView={(id) => navigate(`/admin/orders/${id}`)} onChangeStatus={handleUpdateStatus} />
     </>
   )

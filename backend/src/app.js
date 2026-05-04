@@ -9,6 +9,7 @@ const categoriesRoute = require("./routes/categories");
 const authRoute = require("./routes/auth");
 const cartRoute = require("./routes/cart");
 const ordersRoute = require("./routes/orders");
+const promoCodesRoute = require("./routes/promoCodes");
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use("/api/categories", categoriesRoute);
 app.use("/api/auth", authRoute);
 app.use("/api/cart", cartRoute);
 app.use("/api/orders", ordersRoute);
+app.use("/api/promo-codes", promoCodesRoute);
 
 const PORT = process.env.PORT || 5001;
 

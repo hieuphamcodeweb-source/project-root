@@ -1,6 +1,9 @@
 const Cart = require("../../models/Cart");
 const Order = require("../../models/Order");
 const Product = require("../../models/Product");
+const User = require("../../models/User");
+const { resolvePromoForOrder, roundMoney } = require("../../services/promoCodeService");
+const { assignUniqueOrderCode } = require("../../utils/orderCode");
 
 function normalizeRequestedItems(items) {
   if (!Array.isArray(items)) return [];
@@ -20,10 +23,35 @@ async function createCodOrder(req, res) {
       return res.status(401).json({ message: "Invalid user in token. Please login again." });
     }
 
+    const addressId = String(req.body?.addressId || "").trim();
+    if (!addressId) {
+      return res.status(400).json({ message: "Shipping address is required. Choose a saved address." });
+    }
+
     const requestedItems = normalizeRequestedItems(req.body?.items);
     if (requestedItems.length === 0) {
       return res.status(400).json({ message: "At least one order item is required." });
     }
+
+    const userDoc = await User.findOne({ id: userId }).select("addresses").lean();
+    if (!userDoc) {
+      return res.status(404).json({ message: "Account not found." });
+    }
+
+    const saved = (userDoc.addresses || []).find((a) => a.id === addressId);
+    if (!saved) {
+      return res.status(400).json({ message: "Invalid shipping address. Add or pick an address from My account." });
+    }
+
+    const shippingAddress = {
+      addressId: saved.id,
+      recipientName: saved.recipientName,
+      phone: saved.phone,
+      street: saved.street,
+      ward: saved.ward || "",
+      district: saved.district || "",
+      province: saved.province,
+    };
 
     const requestedMap = new Map();
     for (const item of requestedItems) {
@@ -59,20 +87,31 @@ async function createCodOrder(req, res) {
       });
     }
 
+    const itemsSubtotal = orderItems.reduce((sum, item) => sum + item.subtotal, 0);
+    const promo = await resolvePromoForOrder(itemsSubtotal, req.body?.promoCode, userId);
+    if (promo.error) {
+      return res.status(400).json({ message: promo.error });
+    }
+    const discountAmount = promo.discount;
+    const totalAmount = roundMoney(Math.max(0, itemsSubtotal - discountAmount));
+
     for (const item of orderItems) {
       const updated = await Product.updateOne({ _id: item.productId, stock: { $gte: item.quantity } }, { $inc: { stock: -item.quantity } });
       if (!updated.modifiedCount) {
         return res.status(409).json({ message: `Stock changed for ${item.name}. Please try again.` });
       }
     }
-
-    const totalAmount = orderItems.reduce((sum, item) => sum + item.subtotal, 0);
+    const orderCode = await assignUniqueOrderCode();
     const order = await Order.create({
+      orderCode,
       userId,
       paymentMethod: "COD",
       status: "pending",
       totalAmount,
+      discountAmount,
+      promoCode: promo.appliedCode || "",
       items: orderItems,
+      shippingAddress,
     });
 
     const existingCart = await Cart.findOne({ userId }).lean();
@@ -89,9 +128,10 @@ async function createCodOrder(req, res) {
     }
 
     return res.status(201).json({
-      message: "Order placed successfully with COD.",
+      message: "Đặt hàng COD thành công.",
       data: {
         orderId: order._id,
+        orderCode: order.orderCode,
         totalAmount,
         items: orderItems,
       },

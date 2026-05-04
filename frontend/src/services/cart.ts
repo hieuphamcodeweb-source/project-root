@@ -169,11 +169,49 @@ export function clearCart() {
   scheduleCartSync()
 }
 
+function mergeCartWithRemote(remote: CartItem[], local: CartItem[]): CartItem[] {
+  const byId = new Map<string, CartItem>()
+  for (const r of remote) {
+    byId.set(r.productId, { ...r })
+  }
+  for (const l of local) {
+    const existing = byId.get(l.productId)
+    if (!existing) {
+      byId.set(l.productId, { ...l })
+      continue
+    }
+    const stock = existing.stock
+    const qty = Math.min(Math.max(existing.quantity, l.quantity), stock)
+    byId.set(l.productId, {
+      ...existing,
+      quantity: qty,
+    })
+  }
+  return [...byId.values()].filter((item) => item.quantity > 0)
+}
+
 export async function initializeCartFromApi() {
   const remoteItems = await fetchMyCartFromApi()
   if (!remoteItems) return
-  localStorage.setItem(getCartStorageKey(), JSON.stringify(remoteItems))
+
+  const localItems = getCartItems()
+  const merged = mergeCartWithRemote(remoteItems, localItems)
+
+  localStorage.setItem(getCartStorageKey(), JSON.stringify(merged))
   notifyCartUpdated()
+
+  const differsFromRemote =
+    merged.length !== remoteItems.length
+    || merged.some((item) => {
+      const r = remoteItems.find((x) => x.productId === item.productId)
+      return !r || r.quantity !== item.quantity
+    })
+
+  if (differsFromRemote) {
+    await saveMyCartToApi(merged).catch(() => {
+      // Leave merged local state; debounced sync will retry on next edit
+    })
+  }
 }
 
 export function subscribeCartUpdates(callback: () => void) {

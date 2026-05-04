@@ -4,6 +4,8 @@ import { useParams } from 'react-router-dom'
 import { Breadcrumbs } from '../../components/common/Breadcrumbs'
 import { getOrderById, updateOrderStatus } from '../../services/ordersAdminApi'
 import type { OrderItem, OrderRecord, OrderStatus } from '../../types'
+import { formatAddressLines } from '../../utils/addressFormat'
+import { statusLabelVi, statusSelectOptions } from '../../utils/orderStatus'
 
 const statusColorMap: Record<OrderStatus, string> = {
   pending: 'gold',
@@ -34,7 +36,7 @@ export function OrderDetailPage() {
         const result = await getOrderById(id)
         setOrder(result.data)
       } catch {
-        message.error('Cannot load order detail.')
+        message.error('Không tải được chi tiết đơn hàng.')
       } finally {
         setLoading(false)
       }
@@ -46,7 +48,7 @@ export function OrderDetailPage() {
   if (loading || !order) {
     return (
       <>
-        <Breadcrumbs items={['Home', 'Management', 'Orders', 'Detail']} />
+        <Breadcrumbs items={['Trang chủ', 'Quản trị', 'Đơn hàng', 'Chi tiết']} />
         <div className="loading-panel">
           <Spin />
         </div>
@@ -54,39 +56,49 @@ export function OrderDetailPage() {
     )
   }
 
+  const itemsLineSubtotal = order.items.reduce((sum, item) => sum + item.subtotal, 0)
+
   return (
     <>
-      <Breadcrumbs items={['Home', 'Management', 'Orders', 'Detail']} />
+      <Breadcrumbs items={['Trang chủ', 'Quản trị', 'Đơn hàng', 'Chi tiết']} />
       <section className="product-detail-card">
         <Descriptions bordered column={2} className="product-descriptions">
-          <Descriptions.Item label="Order ID">{order._id}</Descriptions.Item>
-          <Descriptions.Item label="User ID">{order.userId}</Descriptions.Item>
-          <Descriptions.Item label="Customer">{order.customerName}</Descriptions.Item>
-          <Descriptions.Item label="Payment">{order.paymentMethod}</Descriptions.Item>
-          <Descriptions.Item label="Created at">{new Date(order.createdAt).toLocaleString()}</Descriptions.Item>
-          <Descriptions.Item label="Total">{toCurrency(order.totalAmount)}</Descriptions.Item>
-          <Descriptions.Item label="Status">
+          <Descriptions.Item label="Mã đơn hàng">
+            {order.orderCode || order._id}
+          </Descriptions.Item>
+          <Descriptions.Item label="Mã khách (User ID)">{order.userId}</Descriptions.Item>
+          <Descriptions.Item label="Khách hàng">{order.customerName}</Descriptions.Item>
+          <Descriptions.Item label="Thanh toán">COD</Descriptions.Item>
+          <Descriptions.Item label="Ngày tạo">{new Date(order.createdAt).toLocaleString('vi-VN')}</Descriptions.Item>
+          <Descriptions.Item label="Tạm tính sản phẩm">{toCurrency(itemsLineSubtotal)}</Descriptions.Item>
+          {(order.discountAmount ?? 0) > 0 ? (
+            <>
+              <Descriptions.Item label="Mã giảm giá">{order.promoCode || '—'}</Descriptions.Item>
+              <Descriptions.Item label="Giảm giá">−{toCurrency(order.discountAmount ?? 0)}</Descriptions.Item>
+            </>
+          ) : null}
+          <Descriptions.Item label="Tổng thanh toán">{toCurrency(order.totalAmount)}</Descriptions.Item>
+          <Descriptions.Item label="Trạng thái">
             <div className="order-status-cell">
-              <Tag color={statusColorMap[order.status]}>{order.status.toUpperCase()}</Tag>
+              <Tag color={statusColorMap[order.status]}>{statusLabelVi(order.status)}</Tag>
               <Select<OrderStatus>
                 value={order.status}
                 loading={updatingStatus}
-                style={{ width: 140 }}
-                options={[
-                  { label: 'Pending', value: 'pending' },
-                  { label: 'Confirmed', value: 'confirmed' },
-                  { label: 'Completed', value: 'completed' },
-                  { label: 'Cancelled', value: 'cancelled' },
-                ]}
+                style={{ width: 160 }}
+                options={statusSelectOptions}
                 onChange={async (nextStatus) => {
                   if (!id) return
                   try {
                     setUpdatingStatus(true)
                     const result = await updateOrderStatus(id, nextStatus)
-                    setOrder(result.data)
-                    message.success('Order status updated successfully.')
+                    setOrder((prev) =>
+                      prev
+                        ? { ...prev, status: result.data.status, updatedAt: result.data.updatedAt }
+                        : prev
+                    )
+                    message.success('Cập nhật trạng thái đơn hàng thành công.')
                   } catch (error) {
-                    message.error(error instanceof Error ? error.message : 'Update order status failed.')
+                    message.error(error instanceof Error ? error.message : 'Không thể cập nhật trạng thái.')
                   } finally {
                     setUpdatingStatus(false)
                   }
@@ -94,6 +106,20 @@ export function OrderDetailPage() {
               />
             </div>
           </Descriptions.Item>
+          {order.shippingAddress?.recipientName ? (
+            <>
+              <Descriptions.Item label="Người nhận" span={2}>
+                {order.shippingAddress.recipientName} · {order.shippingAddress.phone}
+              </Descriptions.Item>
+              <Descriptions.Item label="Địa chỉ giao hàng" span={2}>
+                {formatAddressLines(order.shippingAddress)}
+              </Descriptions.Item>
+            </>
+          ) : (
+            <Descriptions.Item label="Giao hàng" span={2}>
+              —
+            </Descriptions.Item>
+          )}
         </Descriptions>
 
         <Table<OrderItem>
@@ -102,7 +128,7 @@ export function OrderDetailPage() {
           pagination={false}
           columns={[
             {
-              title: 'Image',
+              title: 'Ảnh',
               key: 'thumbnail',
               width: 90,
               render: (_, record) =>
@@ -113,26 +139,26 @@ export function OrderDetailPage() {
                 ),
             },
             {
-              title: 'Product',
+              title: 'Sản phẩm',
               key: 'productName',
               render: (_, record) => record.product?.name || record.name,
             },
             {
-              title: 'Category',
+              title: 'Danh mục',
               key: 'category',
               width: 140,
               render: (_, record) => record.product?.category || '-',
             },
             { title: 'SKU', dataIndex: 'sku', key: 'sku', width: 140 },
-            { title: 'Price at purchase', dataIndex: 'price', key: 'price', width: 150, render: (value: number) => toCurrency(value) },
+            { title: 'Giá lúc mua', dataIndex: 'price', key: 'price', width: 150, render: (value: number) => toCurrency(value) },
             {
-              title: 'Current price',
+              title: 'Giá hiện tại',
               key: 'currentPrice',
               width: 140,
               render: (_, record) => (record.product ? toCurrency(record.product.currentPrice) : '-'),
             },
-            { title: 'Quantity', dataIndex: 'quantity', key: 'quantity', width: 100 },
-            { title: 'Subtotal', dataIndex: 'subtotal', key: 'subtotal', width: 140, render: (value: number) => toCurrency(value) },
+            { title: 'Số lượng', dataIndex: 'quantity', key: 'quantity', width: 100 },
+            { title: 'Thành tiền', dataIndex: 'subtotal', key: 'subtotal', width: 140, render: (value: number) => toCurrency(value) },
           ]}
         />
       </section>

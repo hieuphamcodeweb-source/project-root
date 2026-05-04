@@ -31,6 +31,13 @@ const managementGroups = [
     childItems: [],
     matchPrefix: '/admin/orders',
   },
+  {
+    id: 'promoCodes',
+    label: 'Promo codes',
+    parentTo: '/admin/promo-codes',
+    childItems: [{ to: '/admin/promo-codes/add', label: 'Add' }],
+    matchPrefix: '/admin/promo-codes',
+  },
 ]
 
 export function Sidebar() {
@@ -40,6 +47,7 @@ export function Sidebar() {
     products: false,
     categories: false,
     orders: false,
+    promoCodes: false,
   })
 
   useEffect(() => {

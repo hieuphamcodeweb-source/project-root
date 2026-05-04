@@ -2,8 +2,7 @@ import { Button, Carousel, Descriptions, Divider, Spin, Tag, Typography, message
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { getProductById } from '../../services/productsApi'
-import { addToCart, applyPurchasedItems, getCartItemQuantity, subscribeCartUpdates } from '../../services/cart'
-import { createCodOrder } from '../../services/ordersApi'
+import { addToCart, getCartItemQuantity, subscribeCartUpdates } from '../../services/cart'
 import type { ProductRecord } from '../../types'
 
 function toCurrency(value: number) {
@@ -27,7 +26,7 @@ export function ClientProductDetailPage() {
   const [product, setProduct] = useState<ProductRecord | null>(null)
   const [cartQuantity, setCartQuantity] = useState(0)
   const [addingToCart, setAddingToCart] = useState(false)
-  const [buyingNow, setBuyingNow] = useState(false)
+  const [buyingViaCart, setBuyingViaCart] = useState(false)
 
   useEffect(() => {
     async function loadProduct() {
@@ -108,27 +107,32 @@ export function ClientProductDetailPage() {
             {toCurrency(product.price)}
           </Typography.Title>
 
+          <Typography.Paragraph type="secondary" style={{ marginBottom: 12 }}>
+            Choose shipping address at checkout in your cart (COD).
+          </Typography.Paragraph>
+
           <div className="client-product-cta">
             <Button
               type="primary"
               size="large"
-              loading={buyingNow}
+              loading={buyingViaCart}
               disabled={isOutOfStock}
               onClick={async () => {
                 try {
-                  setBuyingNow(true)
-                  await createCodOrder([{ productId: product._id, quantity: 1 }])
-                  applyPurchasedItems([{ productId: product._id, quantity: 1 }])
-                  message.success('COD order placed successfully.')
-                  navigate('/client/order-success')
-                } catch (error) {
-                  message.error(error instanceof Error ? error.message : 'Failed to place COD order.')
+                  setBuyingViaCart(true)
+                  const ok = addToCart(product, 1)
+                  if (!ok) {
+                    message.warning('Cannot add to cart (stock).')
+                    return
+                  }
+                  message.success(`${product.name} added. Open your cart to choose address and pay COD.`)
+                  navigate('/client/cart')
                 } finally {
-                  setBuyingNow(false)
+                  setBuyingViaCart(false)
                 }
               }}
             >
-              Buy now
+              Add & go to cart
             </Button>
             <Button
               size="large"
